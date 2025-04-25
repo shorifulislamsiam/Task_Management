@@ -40,9 +40,9 @@ class _TMAppBarState extends State<TMAppBar> {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundImage: _shouldShowImage(context, AuthController.userModel!.photo)
+            backgroundImage: _shouldShowImage(context, userUpdate?.photo)//AuthController.userModel!.photo
                 ? MemoryImage(
-              base64Decode(userUpdate?.photo?? AuthController.userModel!.photo),//
+              base64Decode( userUpdate?.photo ??AuthController.userModel!.photo ?? ""),//
             ): null,
           ),
           SizedBox(width: 8),
@@ -50,7 +50,7 @@ class _TMAppBarState extends State<TMAppBar> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                userUpdate?.firstName ?? AuthController.userModel!.firstName,//AuthController.userModel!.firstName
+                userUpdate?.fullName ?? AuthController.userModel!.fullName,//AuthController.userModel!.firstName
                 style: _textTheme.bodyLarge?.copyWith(color: Colors.white),
               ),
               Text(

@@ -165,6 +165,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
       "firstName": _firstNameController.text,
       "lastName": _lastNameController.text,
       "mobile": _mobileController.text.trim(),
+      "photo": _pickedImages
       //"password": _passwordController.text,
     };
     if (_passwordController.text.isNotEmpty) {
@@ -202,10 +203,10 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
  Future<void>updateUserData()async{
    UserModel updatedUserModel = UserModel.fromJson({
      "email": _emailController.text.trim(),
-     "firstName": _firstNameController.text.trim(),
-     "lastName": _lastNameController.text.trim(),
+     "firstName": _firstNameController.text,
+     "lastName": _lastNameController.text,
      "mobile": _mobileController.text.trim(),
-     "photo": _pickedImages?.path
+     "photo": _pickedImages
    }
    );
    // Save the updated user information in SharedPreferences
