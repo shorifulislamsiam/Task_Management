@@ -146,7 +146,7 @@ class _signup_screenState extends State<signup_screen> {
                         children: [
                           TextSpan(text: "Have account? "),
                           TextSpan(
-                            text: "Sign In",
+                            text: "log In",
                             style: TextStyle(color: Colors.green, fontSize: 16),
                             recognizer:
                                 TapGestureRecognizer()
