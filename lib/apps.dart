@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:ostad_task_management/controller_binder.dart';
 import 'package:ostad_task_management/ui/screens/splash_screen.dart';
 
 class TaskMangerApps extends StatelessWidget {
@@ -7,7 +9,7 @@ class TaskMangerApps extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       navigatorKey: TaskMangerApps.navigatorKey,
       theme: ThemeData(
         colorSchemeSeed: Colors.green,
@@ -45,6 +47,7 @@ class TaskMangerApps extends StatelessWidget {
 
       home: splash_screen(),
       debugShowCheckedModeBanner: false,
+      initialBinding: ControllerBinder(),
       // initialRoute: "/",
       // routes: {
       //   "/":(context)=>splash_screen(),

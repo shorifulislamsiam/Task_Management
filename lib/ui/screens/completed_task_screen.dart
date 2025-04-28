@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:ostad_task_management/ui/controllers/get_completedtask_controller.dart';
 import 'package:ostad_task_management/ui/widgets/TaskCard.dart';
 
 import '../../data/model/task_list_model.dart';
@@ -15,8 +18,7 @@ class CompletedTaskScreen extends StatefulWidget {
 }
 
 class _CompletedTaskScreenState extends State<CompletedTaskScreen> {
-  bool _getCompletedTaskInprogress = false;
-  List<TaskModel> _completedTaskList = [];
+  final GetCompletedTaskController getCompletedTaskController = Get.find<GetCompletedTaskController>();
   @override
   void initState() {
     super.initState();
@@ -26,39 +28,35 @@ class _CompletedTaskScreenState extends State<CompletedTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Visibility(
-        visible: _getCompletedTaskInprogress == false,
-        replacement: Center(child: CircularProgressIndicator()),
-        child: ListView.separated(
-          separatorBuilder: (context, index) {
-            return SizedBox(height: 10);
-          },
-          itemCount: _completedTaskList.length,
-          itemBuilder: (context, index) {
-            return TaskCard(
-              taskStatus: TaskStatus.completed,
-              taskModel: _completedTaskList[index],
-              refreshList: _getCompletedStatusCount,
-            );
-          },
-        ),
+      body: GetBuilder(
+        init: getCompletedTaskController,
+        builder: (controller) {
+          return Visibility(
+            visible: controller.getCompletedTaskInprogress == false,
+            replacement: Center(child: CircularProgressIndicator()),
+            child: ListView.separated(
+              separatorBuilder: (context, index) {
+                return SizedBox(height: 10);
+              },
+              itemCount: controller.completedTaskList.length,
+              itemBuilder: (context, index) {
+                return TaskCard(
+                  taskStatus: TaskStatus.completed,
+                  taskModel: controller.completedTaskList[index],
+                  refreshList: _getCompletedStatusCount,
+                );
+              },
+            ),
+          );
+        }
       ),
     );
   }
 
   Future<void> _getCompletedStatusCount() async {
-    _getCompletedTaskInprogress = true;
-    setState(() {});
-    final NetworkResponse response = await NetworkClient.getRequest(
-      url: Urls.completedTaskStatus,
-    );
-    if (response.isSuccess) {
-      TaskListModel taskListModel = TaskListModel.fromJson(response.data ?? {});
-      _completedTaskList = taskListModel.taskList;
-    } else {
-      showsnackbarMassage(context, response.errorMassage, true);
+    bool isSuccess = await getCompletedTaskController.getProgressStatusCount();
+    if (!isSuccess) {
+      showsnackbarMassage(context, getCompletedTaskController.errorMassage!, true);
     }
-    _getCompletedTaskInprogress = false;
-    setState(() {});
   }
 }

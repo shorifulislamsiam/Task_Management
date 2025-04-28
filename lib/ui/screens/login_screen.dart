@@ -1,16 +1,15 @@
+
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:ostad_task_management/data/model/login_model.dart';
-import 'package:ostad_task_management/data/service/network_clients.dart';
-import 'package:ostad_task_management/ui/controllers/auth_controller.dart';
+import 'package:get/get.dart';
+import 'package:ostad_task_management/ui/controllers/login_controller.dart';
 import 'package:ostad_task_management/ui/screens/forgot_password_verify_email_screen.dart';
 import 'package:ostad_task_management/ui/screens/main_bottom_nav_screen.dart';
 import 'package:ostad_task_management/ui/screens/signup_screen.dart';
 import 'package:ostad_task_management/ui/widgets/background_widget.dart';
 import 'package:ostad_task_management/ui/widgets/obsecure.dart';
 
-import '../../data/utils/urls.dart';
 import '../widgets/show_snackbarMassage.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -24,9 +23,9 @@ class _LoginScreenState extends State<LoginScreen> {
   TextEditingController _emailController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  //bool _isobsecure = true;
   obsecure _isObsecureText = obsecure();
-  bool _isLoginSucess = false;
+  final LoginController loginController = Get.find<LoginController>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,16 +96,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 SizedBox(height: 16),
-                Visibility(
-                  visible: _isLoginSucess = true,
-                  replacement: Center(child: CircularProgressIndicator()),
-                  child: ElevatedButton(
-                    onPressed: _signInButton,
-                    child: Icon(
-                      Icons.arrow_circle_right_sharp,
-                      color: Colors.white,
-                    ),
-                  ),
+                GetBuilder<LoginController>(
+                  builder: (controller) {
+                    return Visibility(
+                      visible: controller.isLoginProgress == false,
+                      replacement: Center(child: CircularProgressIndicator()),
+                      child: ElevatedButton(
+                        onPressed: _signInButton,
+                        child: Icon(
+                          Icons.arrow_circle_right_sharp,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 SizedBox(height: 32),
                 Center(
@@ -150,30 +153,18 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _userLogin() async {
-    _isLoginSucess = true;
-    setState(() {});
-    Map<String, dynamic> requestBody = {
-      "email": _emailController.text.trim(),
-      "password": _passwordController.text,
-    };
-    NetworkResponse response = await NetworkClient.postRequest(
-      url: Urls.loginrUrls,
-      body: requestBody,
+    final bool isSuccess = await loginController.userLogin(
+      _emailController.text.trim(),
+      _passwordController.text,
     );
-    _isLoginSucess = false;
-    setState(() {});
-    if (response.isSuccess) {
-      //TODO: this code is for consume the data
-      LoginModel loginModel = LoginModel.fromJson(response.data!);
-      //TODO: this code is for save the data locally
-      AuthController .saveUserInformation(loginModel.token, loginModel.userModel);
+    if (isSuccess) {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => MainBottomNavScreen()),
         (predicate) => false,
       );
     } else {
-      showsnackbarMassage(context, response.errorMassage, true);
+      showsnackbarMassage(context, loginController.errorMassage!, true);
     }
   }
 

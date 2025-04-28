@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:ostad_task_management/ui/controllers/get_cancalledtask_controller.dart';
 import 'package:ostad_task_management/ui/widgets/TaskCard.dart';
 
 import '../../data/model/task_list_model.dart';
@@ -15,8 +17,8 @@ class CancelTaskScreen extends StatefulWidget {
 }
 
 class _CancelTaskScreenState extends State<CancelTaskScreen> {
-  bool _getCancelTaskInprogress = false;
-  List<TaskModel> _calcelTaskList = [];
+  final GetCancelledTaskController getCancelledTaskController = Get.find<GetCancelledTaskController>();
+
   @override
   void initState() {
     super.initState();
@@ -25,39 +27,35 @@ class _CancelTaskScreenState extends State<CancelTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Visibility(
-        visible: _getCancelTaskInprogress == false,
-        replacement: Center(
-          child: CircularProgressIndicator(),
-        ),
-        child: ListView.separated(
-          separatorBuilder: (context, index){
-            return SizedBox(height: 10,);
-          },
-          itemCount: _calcelTaskList.length,
-          itemBuilder: (context, index){
-             return TaskCard(
-               taskStatus: TaskStatus.cancelled,
-               taskModel: _calcelTaskList[index],
-               refreshList: _getCancelStatusCount,);
-          },
-        ),
+      body: GetBuilder(
+        init: getCancelledTaskController,
+        builder: (controller) {
+          return Visibility(
+            visible: controller.isGetCancalledTaskInProgress == false,
+            replacement: Center(
+              child: CircularProgressIndicator(),
+            ),
+            child: ListView.separated(
+              separatorBuilder: (context, index){
+                return SizedBox(height: 10,);
+              },
+              itemCount: controller.cancalledTaskList.length,
+              itemBuilder: (context, index){
+                 return TaskCard(
+                   taskStatus: TaskStatus.cancelled,
+                   taskModel: controller.cancalledTaskList[index],//_calcelTaskList[index],
+                   refreshList: _getCancelStatusCount,);
+              },
+            ),
+          );
+        }
       ),
     );
   }
   Future<void> _getCancelStatusCount() async {
-    _getCancelTaskInprogress = true;
-    setState(() {});
-    final NetworkResponse response = await NetworkClient.getRequest(
-      url: Urls.cancelTaskStatus,
-    );
-    if (response.isSuccess) {
-      TaskListModel taskListModel = TaskListModel.fromJson(response.data ?? {});
-      _calcelTaskList = taskListModel.taskList;
-    } else {
-      showsnackbarMassage(context, response.errorMassage, true);
+    bool isSuccess = await getCancelledTaskController.getCancalledTask();
+    if (!isSuccess) {
+      showsnackbarMassage(context, getCancelledTaskController.errorMassage!, true);
     }
-    _getCancelTaskInprogress = false;
-    setState(() {});
   }
 }

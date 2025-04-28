@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ostad_task_management/data/service/network_clients.dart';
 import 'package:ostad_task_management/data/utils/urls.dart';
+import 'package:ostad_task_management/ui/controllers/add_newtask_controller.dart';
 import 'package:ostad_task_management/ui/widgets/TMAppBar.dart';
 import 'package:ostad_task_management/ui/widgets/show_snackbarMassage.dart';
 
@@ -15,7 +17,8 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _detailsController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  bool _isAddNewTaskProgress = false;
+  //bool _isAddNewTaskProgress = false;
+  final AddNewTaskController addNewTaskController = Get.find<AddNewTaskController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -68,18 +71,23 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
                     },
                   ),
                   SizedBox(height: 30),
-                  Visibility(
-                    visible: _isAddNewTaskProgress ==false,
-                    replacement: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    child: ElevatedButton(
-                      onPressed: _onTapAddNewSubmitButton,
-                      child: Icon(
-                        Icons.arrow_circle_right_sharp,
-                        color: Colors.white,
-                      ),
-                    ),
+                  GetBuilder(
+                    init: addNewTaskController,
+                    builder: (controller) {
+                      return Visibility(
+                        visible: controller.isAddTaskInProgress ==false,
+                        replacement: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        child: ElevatedButton(
+                          onPressed: _onTapAddNewSubmitButton,
+                          child: Icon(
+                            Icons.arrow_circle_right_sharp,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    }
                   ),
                 ],
               ),
@@ -96,26 +104,40 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
     }
   }
 
+  // Future<void> _addNewTask() async {
+  //   _isAddNewTaskProgress = true;
+  //   setState(() {});
+  //   Map<String, dynamic> requestBody = {
+  //     "title": _subjectController.text.trim(),
+  //     "description": _detailsController.text.trim(),
+  //     "status": "New",
+  //   };
+  //   final NetworkResponse response = await NetworkClient.postRequest(
+  //     url: Urls.createNewTask,
+  //     body: requestBody,
+  //   );
+  //   _isAddNewTaskProgress = false;
+  //   setState(() { });
+  //   if(response.isSuccess){
+  //     _clearTextFields();
+  //     showsnackbarMassage(context, "New task added");
+  //
+  //   }else{
+  //     showsnackbarMassage(context, response.errorMassage);
+  //   }
+  // }
   Future<void> _addNewTask() async {
-    _isAddNewTaskProgress = true;
-    setState(() {});
-    Map<String, dynamic> requestBody = {
-      "title": _subjectController.text.trim(),
-      "description": _detailsController.text.trim(),
-      "status": "New",
-    };
-    final NetworkResponse response = await NetworkClient.postRequest(
-      url: Urls.createNewTask,
-      body: requestBody,
+    bool isSuccess =await addNewTaskController.addNewTask(
+        _subjectController.text.trim(),
+        _detailsController.text.trim(),
+        "New"
     );
-    _isAddNewTaskProgress = false;
-    setState(() { });
-    if(response.isSuccess){
+    if(isSuccess == true){
       _clearTextFields();
       showsnackbarMassage(context, "New task added");
 
     }else{
-      showsnackbarMassage(context, response.errorMassage);
+      showsnackbarMassage(context, addNewTaskController.errorMassage!,true);
     }
   }
 
