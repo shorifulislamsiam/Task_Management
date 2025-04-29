@@ -1,8 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:ostad_task_management/data/service/network_clients.dart';
 import 'package:ostad_task_management/data/utils/urls.dart';
+import 'package:ostad_task_management/ui/controllers/reset_password_controller.dart';
 import 'package:ostad_task_management/ui/screens/login_screen.dart';
 import 'package:ostad_task_management/ui/screens/main_bottom_nav_screen.dart';
 import 'package:ostad_task_management/ui/widgets/background_widget.dart';
@@ -12,11 +14,9 @@ import 'package:ostad_task_management/ui/widgets/show_snackbarMassage.dart';
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({
     super.key,
-    required this.email,
-    required this.otp,
+
   });
-  final String email;
-  final String otp;
+
   @override
   State<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
@@ -26,7 +26,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   TextEditingController _confirmNewPasswordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final obsecure _isObsecureText = obsecure();
-  bool _isResetPasswordInprogress = false;
+  //bool _isResetPasswordInprogress = false;
+  final ResetPasswordController _resetPasswordController = Get.find<ResetPasswordController>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,16 +101,21 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                   ),
                 ),
                 SizedBox(height: 16),
-                Visibility(
-                  visible: _isResetPasswordInprogress == false,
-                  replacement: Center(child: CircularProgressIndicator()),
-                  child: ElevatedButton(
-                    onPressed: _submitButton,
-                    child: Icon(
-                      Icons.arrow_circle_right_sharp,
-                      color: Colors.white,
-                    ),
-                  ),
+                GetBuilder(
+                  init: _resetPasswordController,
+                  builder: (context) {
+                    return Visibility(
+                      visible: _resetPasswordController.isResetPasswordInProgress == false,
+                      replacement: Center(child: CircularProgressIndicator()),
+                      child: ElevatedButton(
+                        onPressed: _submitButton,
+                        child: Icon(
+                          Icons.arrow_circle_right_sharp,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  }
                 ),
                 SizedBox(height: 42),
                 Center(
@@ -159,31 +166,51 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     super.dispose();
   }
 
+  // Future<void> _resetPassword() async {
+  //   try {
+  //     _isResetPasswordInprogress = true;
+  //     setState(() {});
+  //     Map<String, dynamic> requestBody = {
+  //       //"email": widget.email.trim(),
+  //       //"OTP": widget.otp.trim(),
+  //       "password": _confirmNewPasswordController.text.trim(),
+  //     };
+  //     NetworkResponse response = await NetworkClient.postRequest(
+  //       url: Urls.resetPassword,
+  //       body: requestBody,
+  //     );
+  //     _isResetPasswordInprogress = false;
+  //     setState(() {});
+  //     if (response.isSuccess) {
+  //       _logger.d("successfully clicked");
+  //       showsnackbarMassage(context, "Password reset successfully");
+  //       Navigator.pushAndRemoveUntil(
+  //         context,
+  //         MaterialPageRoute(builder: (_) => MainBottomNavScreen()),
+  //         (predicate) => false,
+  //       );
+  //     } else {
+  //       showsnackbarMassage(context, response.errorMassage, true);
+  //     }
+  //   } catch (e) {
+  //     _logger.e(e);
+  //   }
+  // }
+
   Future<void> _resetPassword() async {
     try {
-      _isResetPasswordInprogress = true;
-      setState(() {});
-      Map<String, dynamic> requestBody = {
-        "email": widget.email.trim(),
-        "OTP": widget.otp.trim(),
-        "password": _confirmNewPasswordController.text.trim(),
-      };
-      NetworkResponse response = await NetworkClient.postRequest(
-        url: Urls.resetPassword,
-        body: requestBody,
-      );
-      _isResetPasswordInprogress = false;
-      setState(() {});
-      if (response.isSuccess) {
+      bool isSuccess = await _resetPasswordController.resetPassword(_confirmNewPasswordController.text.trim());
+
+      if (isSuccess == true) {
         _logger.d("successfully clicked");
         showsnackbarMassage(context, "Password reset successfully");
         Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => MainBottomNavScreen()),
-          (predicate) => false,
+              (predicate) => false,
         );
       } else {
-        showsnackbarMassage(context, response.errorMassage, true);
+        showsnackbarMassage(context, _resetPasswordController.errorMassage!, true);
       }
     } catch (e) {
       _logger.e(e);

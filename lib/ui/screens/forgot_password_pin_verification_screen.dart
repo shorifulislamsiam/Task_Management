@@ -1,7 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:ostad_task_management/ui/controllers/auth_controller.dart';
+import 'package:ostad_task_management/ui/controllers/email_verify_controller.dart';
+import 'package:ostad_task_management/ui/controllers/forgot_password_pinverify_controller.dart';
 import 'package:ostad_task_management/ui/screens/reset_password_screen.dart';
 import 'package:ostad_task_management/ui/widgets/background_widget.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
@@ -11,16 +14,17 @@ import '../../data/utils/urls.dart';
 import '../widgets/show_snackbarMassage.dart';
 
 class forgot_password_pin_verification_screen extends StatefulWidget {
-  const forgot_password_pin_verification_screen({super.key, required this.email});
-  final String email;
+  const forgot_password_pin_verification_screen({super.key});
   @override
   State<forgot_password_pin_verification_screen> createState() => _forgot_password_pin_verification_screenState();
 }
 
 class _forgot_password_pin_verification_screenState extends State<forgot_password_pin_verification_screen> {
-  TextEditingController _pinCodeController = TextEditingController();
+  //TextEditingController _pinCodeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isPinCodeInprogress = false;
+  final ForgotPasswordPinVerifyController forgotPasswordPinVerifyController = Get.find<ForgotPasswordPinVerifyController>();
+  final EmailVerifyController _emailVerifyController = Get.find<EmailVerifyController>();
   // @override
   // void initState(){
   //   super.initState();
@@ -68,7 +72,7 @@ class _forgot_password_pin_verification_screenState extends State<forgot_passwor
                         animationDuration: const Duration(milliseconds: 300),
                         backgroundColor: Colors.transparent,
                         enableActiveFill: true,
-                        controller: _pinCodeController,
+                        controller: forgotPasswordPinVerifyController.pinCodeController,//_pinCodeController,
                         appContext: context,
                         validator: (String? value){
 
@@ -133,35 +137,55 @@ class _forgot_password_pin_verification_screenState extends State<forgot_passwor
   // }
 
 
+  // Future<void> _pinVerificationTesting() async {
+  //   //final int otp =  int.parse(_pinCodeController.text.trim());
+  //   final String otp =  _pinCodeController.text.trim();
+  //   try{
+  //     _isPinCodeInprogress = true;
+  //     setState(() {});
+  //
+  //     final NetworkResponse response = await NetworkClient.getRequest(
+  //       url: Urls.pinVerification(widget.email, otp),//AuthController.userModel?.email ?? ""
+  //
+  //     );
+  //     if (response.statusCode ==200) {
+  //       showsnackbarMassage(context, "successfully sent");
+  //       print("submit");
+  //       Navigator.push(context, MaterialPageRoute(builder: (_)=>ResetPasswordScreen(email: widget.email, otp: otp,)));
+  //     } else {
+  //       showsnackbarMassage(context, response.errorMassage, true);
+  //     }
+  //     _isPinCodeInprogress = false;
+  //     setState(() {});
+  //   }catch(e){
+  //     _isPinCodeInprogress = false;
+  //     setState(() {
+  //
+  //     });
+  //     _logger.e(e);
+  //   }
+  // }
+  // Logger _logger = Logger();
+
   Future<void> _pinVerificationTesting() async {
-    //final int otp =  int.parse(_pinCodeController.text.trim());
-    final String otp =  _pinCodeController.text.trim();
+    //final String otp =  _pinCodeController.text.trim();
+    //final email= _emailVerifyController.emailController;
     try{
-      _isPinCodeInprogress = true;
-      setState(() {});
-
-      final NetworkResponse response = await NetworkClient.getRequest(
-        url: Urls.pinVerification(widget.email, otp),//AuthController.userModel?.email ?? ""
-
-      );
-      if (response.statusCode ==200) {
+      bool isSuccess = await forgotPasswordPinVerifyController.pinVerify();
+      if (isSuccess == true) {
         showsnackbarMassage(context, "successfully sent");
         print("submit");
-        Navigator.push(context, MaterialPageRoute(builder: (_)=>ResetPasswordScreen(email: widget.email, otp: otp,)));
+        Navigator.push(context, MaterialPageRoute(builder: (_)=>ResetPasswordScreen()));
       } else {
-        showsnackbarMassage(context, response.errorMassage, true);
+        showsnackbarMassage(context, forgotPasswordPinVerifyController.errorMassage!, true);
       }
-      _isPinCodeInprogress = false;
-      setState(() {});
-    }catch(e){
-      _isPinCodeInprogress = false;
-      setState(() {
 
-      });
+    }catch(e){
       _logger.e(e);
     }
   }
   Logger _logger = Logger();
+
 
 
 }

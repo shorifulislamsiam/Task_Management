@@ -157,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
       _emailController.text.trim(),
       _passwordController.text,
     );
-    if (isSuccess) {
+    if (isSuccess == true) {
       Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => MainBottomNavScreen()),

@@ -219,7 +219,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
      _firstNameController.text = updatedUserModel.firstName;
      _lastNameController.text = updatedUserModel.lastName;
      _mobileController.text = updatedUserModel.mobile;
-     _pickedImages =updatedUserModel.photo as XFile?;
+     _pickedImages = updatedUserModel.photo as XFile?;
    });
  }
 

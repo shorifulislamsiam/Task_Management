@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:logger/logger.dart';
 import 'package:ostad_task_management/data/model/user_model.dart';
 import 'package:ostad_task_management/ui/controllers/auth_controller.dart';
+import 'package:ostad_task_management/ui/controllers/email_verify_controller.dart';
 import 'package:ostad_task_management/ui/screens/forgot_password_pin_verification_screen.dart';
 import 'package:ostad_task_management/ui/widgets/background_widget.dart';
 
@@ -17,13 +19,18 @@ class forgot_password_verify_email_screen extends StatefulWidget {
   const forgot_password_verify_email_screen({super.key});
 
   @override
-  State<forgot_password_verify_email_screen> createState() => _forgot_password_verify_email_screenState();
+  State<forgot_password_verify_email_screen> createState() =>
+      _forgot_password_verify_email_screenState();
 }
 
-class _forgot_password_verify_email_screenState extends State<forgot_password_verify_email_screen> {
-  TextEditingController _emailController = TextEditingController();
+class _forgot_password_verify_email_screenState
+    extends State<forgot_password_verify_email_screen> {
+  //final TextEditingController _emailController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool _isEmailVerificationProgress = false;
+  //bool _isEmailVerificationProgress = false;
+
+  final EmailVerifyController _emailVerifyController =
+      Get.find<EmailVerifyController>();
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +47,12 @@ class _forgot_password_verify_email_screenState extends State<forgot_password_ve
                   "Your Email Address",
                   style: Theme.of(context).textTheme.displayMedium,
                 ),
-                SizedBox(height: 4,),
+                SizedBox(height: 4),
                 Text(
-                    "A 6 digit verification pin will be sent to your email.",
-                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(color: Colors.grey),
+                  "A 6 digit verification pin will be sent to your email.",
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyLarge!.copyWith(color: Colors.grey),
                 ),
                 SizedBox(height: 24),
                 Form(
@@ -53,33 +62,37 @@ class _forgot_password_verify_email_screenState extends State<forgot_password_ve
                       TextFormField(
                         textInputAction: TextInputAction.next,
                         keyboardType: TextInputType.emailAddress,
-                        controller: _emailController,
+                        controller:
+                            _emailVerifyController
+                                .emailController, //_emailController,
                         decoration: InputDecoration(labelText: "Email"),
-                        validator: (String? value){
+                        validator: (String? value) {
                           final email = value?.trim() ?? "";
-                          if(EmailValidator.validate(email) == false){
+                          if (EmailValidator.validate(email) == false) {
                             return "Give a correct email";
                           }
                           return null;
                         },
                       ),
-
                     ],
                   ),
                 ),
                 SizedBox(height: 16),
-                Visibility(
-                  visible: _isEmailVerificationProgress == false,
-                  replacement: Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: _submitButton,
-                    child: Icon(
-                      Icons.arrow_circle_right_sharp,
-                      color: Colors.white,
-                    ),
-                  ),
+                GetBuilder(
+                  init: _emailVerifyController,
+                  builder: (controller) {
+                    return Visibility(
+                      visible: controller.isEmailVerifyInProgress == false,
+                      replacement: Center(child: CircularProgressIndicator()),
+                      child: ElevatedButton(
+                        onPressed: _submitButton,
+                        child: Icon(
+                          Icons.arrow_circle_right_sharp,
+                          color: Colors.white,
+                        ),
+                      ),
+                    );
+                  },
                 ),
                 SizedBox(height: 42),
                 Center(
@@ -92,10 +105,10 @@ class _forgot_password_verify_email_screenState extends State<forgot_password_ve
                           text: "Sign In",
                           style: TextStyle(color: Colors.green, fontSize: 16),
                           recognizer:
-                          TapGestureRecognizer()
-                            ..onTap = () {
-                              _onTapSignUpButton(context);
-                            },
+                              TapGestureRecognizer()
+                                ..onTap = () {
+                                  _onTapSignUpButton(context);
+                                },
                         ),
                       ],
                     ),
@@ -109,8 +122,8 @@ class _forgot_password_verify_email_screenState extends State<forgot_password_ve
     );
   }
 
-  void _submitButton(){
-    if(_formKey.currentState!.validate()){
+  void _submitButton() {
+    if (_formKey.currentState!.validate()) {
       _emailVerificationTesting();
     }
     //Navigator.push(context, MaterialPageRoute(builder: (_)=>forgot_password_pin_verification_screen()));
@@ -125,31 +138,58 @@ class _forgot_password_verify_email_screenState extends State<forgot_password_ve
   //   super.dispose();
   // }
 
+  // Future<void> _emailVerificationTesting() async {
+  //   try{
+  //     _isEmailVerificationProgress = true;
+  //     setState(() {});
+  //
+  //     final NetworkResponse response = await NetworkClient.getRequest(
+  //       url: Urls.emailverification(_emailController.text),//AuthController.userModel?.email ?? ""
+  //
+  //     );
+  //     if (response.statusCode ==200) {
+  //       showsnackbarMassage(context, "successfully sent");
+  //       print("submit");
+  //       Navigator.push(context, MaterialPageRoute(builder: (_)=>forgot_password_pin_verification_screen(email: _emailController.text.trim(),)));
+  //     } else {
+  //       showsnackbarMassage(context, response.errorMassage, true);
+  //     }
+  //     _isEmailVerificationProgress = false;
+  //     setState(() {});
+  //   }catch(e){
+  //     _isEmailVerificationProgress = false;
+  //     setState(() {
+  //
+  //     });
+  //     _logger.e(e);
+  //   }
+  // }
+  // Logger _logger = Logger();
+
   Future<void> _emailVerificationTesting() async {
-    try{
-      _isEmailVerificationProgress = true;
-      setState(() {});
-
-      final NetworkResponse response = await NetworkClient.getRequest(
-        url: Urls.emailverification(_emailController.text),//AuthController.userModel?.email ?? ""
-
-      );
-      if (response.statusCode ==200) {
+    //String email = _emailController.text.trim();
+    bool isSuccess = await _emailVerifyController.emailVerify();
+    try {
+      if (isSuccess == true) {
         showsnackbarMassage(context, "successfully sent");
         print("submit");
-        Navigator.push(context, MaterialPageRoute(builder: (_)=>forgot_password_pin_verification_screen(email: _emailController.text.trim(),)));
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => forgot_password_pin_verification_screen(),
+          ),
+        );
       } else {
-        showsnackbarMassage(context, response.errorMassage, true);
+        showsnackbarMassage(
+          context,
+          _emailVerifyController.errorMassage!,
+          true,
+        );
       }
-      _isEmailVerificationProgress = false;
-      setState(() {});
-    }catch(e){
-      _isEmailVerificationProgress = false;
-      setState(() {
-
-      });
+    } catch (e) {
       _logger.e(e);
     }
   }
+
   Logger _logger = Logger();
 }
