@@ -1,8 +1,11 @@
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:ostad_task_management/data/service/network_clients.dart';
 import 'package:ostad_task_management/data/utils/urls.dart';
+import 'package:ostad_task_management/ui/controllers/signup_controller.dart';
+import 'package:ostad_task_management/ui/screens/login_screen.dart';
 import 'package:ostad_task_management/ui/widgets/background_widget.dart';
 import 'package:ostad_task_management/ui/widgets/obsecure.dart';
 import 'package:ostad_task_management/ui/widgets/show_snackbarMassage.dart';
@@ -22,7 +25,9 @@ class _signup_screenState extends State<signup_screen> {
   TextEditingController _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   final obsecure _isObsecureText = obsecure();
-  bool _isRegistrationSucess = false;
+  //bool _isRegistrationSucess = false;
+
+  final SignUpController _signUpController = Get.find<SignUpController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,18 +130,23 @@ class _signup_screenState extends State<signup_screen> {
                     ),
                   ),
                   SizedBox(height: 16),
-                  Visibility(
-                    visible: _isRegistrationSucess == false,
-                    replacement: Center(
-                      child: CircularProgressIndicator(),
-                    ),
-                    child: ElevatedButton(
-                      onPressed: _onTapSubmitButton,
-                      child: Icon(
-                        Icons.arrow_circle_right_sharp,
-                        color: Colors.white,
-                      ),
-                    ),
+                  GetBuilder(
+                    init: _signUpController,
+                    builder: (controller) {
+                      return Visibility(
+                        visible: controller.isSignUpInprogress == false,
+                        replacement: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                        child: ElevatedButton(
+                          onPressed: _onTapSubmitButton,
+                          child: Icon(
+                            Icons.arrow_circle_right_sharp,
+                            color: Colors.white,
+                          ),
+                        ),
+                      );
+                    }
                   ),
                   SizedBox(height: 32),
                   Center(
@@ -173,25 +183,40 @@ class _signup_screenState extends State<signup_screen> {
     }
   }
 
+  // Future<void> _registerUser() async {
+  //   _isRegistrationSucess =true;
+  //   setState(() { });
+  //   Map<String,dynamic> requestBody ={
+  //     "email": _emailController.text.trim(),
+  //     "firstName": _firstNameController.text,
+  //     "lastName": _lastNameController.text,
+  //     "mobile": _mobileController.text.trim(),
+  //     "password": _passwordController.text,
+  //   };
+  //   NetworkResponse response = await NetworkClient.postRequest(url: Urls.registerUrls, body: requestBody);
+  //   _isRegistrationSucess =false;
+  //   setState(() {
+  //
+  //   });
+  //   if(response.isSuccess){
+  //     showsnackbarMassage(context, "User registerd successfully");
+  //   }else{
+  //     showsnackbarMassage(context, response.errorMassage,true);
+  //   }
+  // }
   Future<void> _registerUser() async {
-    _isRegistrationSucess =true;
-    setState(() { });
-    Map<String,dynamic> requestBody ={
-      "email": _emailController.text.trim(),
-      "firstName": _firstNameController.text,
-      "lastName": _lastNameController.text,
-      "mobile": _mobileController.text.trim(),
-      "password": _passwordController.text,
-    };
-    NetworkResponse response = await NetworkClient.postRequest(url: Urls.registerUrls, body: requestBody);
-    _isRegistrationSucess =false;
-    setState(() {
-
-    });
-    if(response.isSuccess){
+    bool isSuccess = await _signUpController.signUpUser(
+        _emailController.text.trim(),
+        _firstNameController.text.trim(),
+        _lastNameController.text.trim(),
+        _mobileController.text.trim(),
+        _passwordController.text,
+    );
+    if(isSuccess == true){
       showsnackbarMassage(context, "User registerd successfully");
+      Get.to(LoginScreen());
     }else{
-      showsnackbarMassage(context, response.errorMassage,true);
+      showsnackbarMassage(context, _signUpController.errorMassage!,true);
     }
   }
 

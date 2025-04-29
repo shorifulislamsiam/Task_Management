@@ -10,6 +10,7 @@ import 'package:ostad_task_management/ui/controllers/get_newtask_controller.dart
 import 'package:ostad_task_management/ui/controllers/get_progresstask_controller.dart';
 import 'package:ostad_task_management/ui/controllers/login_controller.dart';
 import 'package:ostad_task_management/ui/controllers/reset_password_controller.dart';
+import 'package:ostad_task_management/ui/controllers/signup_controller.dart';
 
 class ControllerBinder extends Bindings{
   @override
@@ -24,6 +25,7 @@ class ControllerBinder extends Bindings{
     Get.lazyPut(()=> EmailVerifyController());
     Get.lazyPut(()=>ForgotPasswordPinVerifyController());
     Get.lazyPut(()=>ResetPasswordController());
+    Get.lazyPut(()=>SignUpController());
   }
 
 }

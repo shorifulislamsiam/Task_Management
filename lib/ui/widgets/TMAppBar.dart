@@ -42,7 +42,7 @@ class _TMAppBarState extends State<TMAppBar> {
             radius: 20,
             backgroundImage: _shouldShowImage(context, userUpdate?.photo)//AuthController.userModel!.photo
                 ? MemoryImage(
-              base64Decode( userUpdate?.photo ??AuthController.userModel!.photo ?? ""),//
+              base64Decode( userUpdate?.photo ??AuthController.userModel!.photo ),//
             ): null,
           ),
           SizedBox(width: 8),
