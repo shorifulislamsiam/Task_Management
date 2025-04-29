@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:ostad_task_management/data/service/network_clients.dart';
-import 'package:ostad_task_management/data/utils/urls.dart';
 import 'package:ostad_task_management/ui/controllers/add_newtask_controller.dart';
 import 'package:ostad_task_management/ui/widgets/TMAppBar.dart';
 import 'package:ostad_task_management/ui/widgets/show_snackbarMassage.dart';
@@ -17,7 +15,6 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   final TextEditingController _subjectController = TextEditingController();
   final TextEditingController _detailsController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  //bool _isAddNewTaskProgress = false;
   final AddNewTaskController addNewTaskController = Get.find<AddNewTaskController>();
   @override
   Widget build(BuildContext context) {
@@ -136,6 +133,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
       _clearTextFields();
       showsnackbarMassage(context, "New task added");
 
+
     }else{
       showsnackbarMassage(context, addNewTaskController.errorMassage!,true);
     }
@@ -149,6 +147,7 @@ class _AddNewTaskScreenState extends State<AddNewTaskScreen> {
   void dispose() {
     _subjectController.dispose();
     _detailsController.dispose();
+
     super.dispose();
   }
 }
