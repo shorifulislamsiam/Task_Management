@@ -201,12 +201,18 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
 /////
  Future<void>updateUserData()async{
+   String? base64Photo;
+
+  if (_pickedImages != null) {
+    List<int> imageBytes = await _pickedImages!.readAsBytes();
+    base64Photo = base64Encode(imageBytes);
+  }
    UserModel updatedUserModel = UserModel.fromJson({
      "email": _emailController.text.trim(),
      "firstName": _firstNameController.text,
      "lastName": _lastNameController.text,
      "mobile": _mobileController.text.trim(),
-     "photo": _pickedImages
+     "photo": base64Photo ?? AuthController.userModel!.photo,
    }
    );
    // Save the updated user information in SharedPreferences
@@ -219,7 +225,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
      _firstNameController.text = updatedUserModel.firstName;
      _lastNameController.text = updatedUserModel.lastName;
      _mobileController.text = updatedUserModel.mobile;
-     _pickedImages =updatedUserModel.photo as XFile?;
+     _pickedImages = null;
    });
  }
 
